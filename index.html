@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eco — tu Instagram, leído en tu propio dispositivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A2E52">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="eco">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  :root{
+    --cielo:#E3EEFA;
+    --papel:#FFFFFF;
+    --tinta:#0C2B4E;
+    --marino:#0A2E52;
+    --gris:#5A7794;
+    --linea:#CFE1F2;
+    --azul:#1668C7;
+    --azul-claro:#DCEDFB;
+    --celeste:#2FB6EE;
+    --coral:#E2574C;
+    --coral-claro:#FCE9E7;
+    --r:12px;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --serif:'Fraunces',Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;
+    background:linear-gradient(168deg,#EDF6FE 0%,#DCEAFA 48%,#E7F1FB 100%);
+    background-attachment:fixed;
+    color:var(--tinta);
+    font-family:var(--sans);
+    font-size:15px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:740px;margin:0 auto;padding:26px 16px 64px}
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--azul);outline-offset:2px;border-radius:4px}
+  .oculto{display:none !important}
+
+  /* ── Cabecera ── */
+  .cabecera{position:relative;padding:16px 0 6px;overflow:hidden}
+  .anillos{position:absolute;top:-46px;right:-56px;width:210px;height:210px;opacity:.5;pointer-events:none}
+  .marca{font-family:var(--serif);font-weight:600;font-size:clamp(46px,15vw,72px);line-height:.9;letter-spacing:-.035em;margin:0;position:relative}
+  .marca em{font-style:normal;color:var(--celeste)}
+  .bajada{font-family:var(--serif);font-size:clamp(17px,4.6vw,21px);font-weight:400;color:var(--gris);margin:8px 0 0;max-width:30ch;position:relative}
+  .sello{display:inline-flex;align-items:center;gap:7px;margin-top:16px;padding:6px 13px 6px 10px;background:var(--azul-claro);color:var(--azul);border-radius:100px;font-size:12.5px;font-weight:500}
+
+  /* ── Carga ── */
+  .zona{margin-top:24px;background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);padding:26px 20px;text-align:center;transition:border-color .15s,background .15s}
+  .zona.encima{border-color:var(--azul);background:var(--azul-claro)}
+  .zona h2{font-family:var(--serif);font-weight:600;font-size:20px;margin:0 0 6px;letter-spacing:-.01em}
+  .zona p{margin:0 0 18px;color:var(--gris);font-size:14px}
+  .zona code{background:var(--azul-claro);padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .boton{display:inline-block;background:var(--tinta);color:var(--papel);border:0;border-radius:100px;padding:13px 26px;font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer;text-decoration:none}
+  .boton:hover{background:var(--azul)}
+  .boton.chico{background:transparent;color:var(--tinta);border:1px solid var(--linea);font-weight:500;font-size:13px;padding:9px 15px}
+  .boton.chico:hover{border-color:var(--azul);color:var(--azul);background:var(--papel)}
+  #entrada{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  .nota-carga{margin-top:14px;font-size:12.5px;color:var(--gris)}
+  .estado{margin-top:14px;font-size:13px;color:var(--gris);text-align:left}
+  .estado:empty{margin:0}
+  .ok{color:var(--azul);font-weight:500}
+  .mal{color:var(--coral);font-weight:500}
+  .barra{height:5px;background:var(--azul-claro);border-radius:100px;overflow:hidden;margin-top:12px}
+  .barra i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--azul),var(--celeste));transition:width .25s}
+
+  details{margin-top:14px;background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);padding:14px 18px}
+  summary{cursor:pointer;font-weight:600;font-size:14px}
+  details ol,details ul{margin:12px 0 0;padding-left:20px;color:var(--gris);font-size:14px}
+  details li{margin-bottom:7px}
+
+  /* ── Instalar ── */
+  #instalar{display:none;margin-top:16px;background:linear-gradient(150deg,var(--marino),#12518F);border-radius:var(--r);padding:16px 18px;color:#fff;align-items:center;gap:14px}
+  #instalar.visible{display:flex;flex-wrap:wrap}
+  #instalar .txt{flex:1 1 190px;min-width:170px}
+  #instalar strong{display:block;font-family:var(--serif);font-size:17px;font-weight:600}
+  #instalar span{font-size:13px;color:#A9D6F2}
+  #instalarBtn{background:var(--celeste);color:#062339;border:0;border-radius:100px;padding:11px 20px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
+  #instalarBtn:hover{background:#fff}
+  #pasos{display:none;margin-top:14px;background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);padding:16px 18px}
+  #pasos.visible{display:block}
+  #pasos h3{margin:0 0 10px;font-family:var(--serif);font-size:16px;font-weight:600}
+
+  /* ── Barra superior de la app ── */
+  .topbar{display:flex;align-items:center;gap:12px;padding:4px 0 18px;flex-wrap:wrap}
+  .topbar .logo{font-family:var(--serif);font-size:30px;font-weight:600;letter-spacing:-.03em;line-height:1}
+  .topbar .logo em{font-style:normal;color:var(--celeste)}
+  .topbar .sep{flex:1}
+
+  .secciones{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+  .secciones::-webkit-scrollbar{display:none}
+  .seccion-btn{flex:0 0 auto;background:var(--papel);border:1px solid var(--linea);border-radius:100px;padding:11px 20px;font-family:var(--sans);font-size:14.5px;font-weight:600;color:var(--gris);cursor:pointer;white-space:nowrap}
+  .seccion-btn.activa{background:var(--marino);border-color:var(--marino);color:#fff}
+  .seccion-btn:disabled{opacity:.45;cursor:not-allowed}
+
+  /* ── Cifras ── */
+  .cifras{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:20px}
+  @media(min-width:580px){.cifras{grid-template-columns:repeat(4,1fr)}}
+  .cifra{background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);padding:14px 15px}
+  .cifra b{display:block;font-family:var(--serif);font-size:28px;font-weight:600;line-height:1;letter-spacing:-.02em}
+  .cifra span{font-size:12.5px;color:var(--gris);display:block;margin-top:5px}
+  .cifra.alerta{background:linear-gradient(150deg,var(--marino),#12518F);border-color:var(--marino)}
+  .cifra.alerta b{color:#fff}
+  .cifra.alerta span{color:#9FD2F4}
+
+  /* ── Bloques ── */
+  .bloque{background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);padding:18px;margin-top:18px}
+  .bloque h3{font-family:var(--serif);font-size:18px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+  .bloque .sub{color:var(--gris);font-size:13px;margin:0 0 14px}
+  .bloque svg.grafico{width:100%;height:auto;display:block;overflow:visible}
+  .aviso{background:var(--azul-claro);border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--azul);margin-top:12px}
+
+  /* ── Pestañas internas ── */
+  .pestanas{display:flex;gap:7px;overflow-x:auto;margin-top:22px;padding-bottom:5px;scrollbar-width:none}
+  .pestanas::-webkit-scrollbar{display:none}
+  .pestana{flex:0 0 auto;background:var(--papel);border:1px solid var(--linea);border-radius:100px;padding:9px 16px;font-family:var(--sans);font-size:13.5px;font-weight:500;color:var(--gris);cursor:pointer;white-space:nowrap}
+  .pestana.activa{background:linear-gradient(135deg,var(--azul),#2FB6EE);border-color:var(--azul);color:#fff;font-weight:600}
+  .pestana .n{opacity:.7;margin-left:6px;font-variant-numeric:tabular-nums}
+
+  .controles{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px}
+  #buscador,#orden{padding:10px 15px;border:1px solid var(--linea);border-radius:100px;background:var(--papel);font-family:var(--sans);font-size:14px;color:var(--tinta)}
+  #buscador{flex:1 1 170px;min-width:140px}
+  #orden{font-size:13.5px}
+  .contexto{margin:16px 0 10px;color:var(--gris);font-size:13.5px}
+
+  /* ── Listas ── */
+  ul.lista{list-style:none;margin:0;padding:0;background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);overflow:hidden}
+  ul.lista li{display:flex;align-items:center;gap:10px;padding:12px 15px;border-top:1px solid var(--linea);flex-wrap:wrap}
+  ul.lista li:first-child{border-top:0}
+  .idx{font-size:12px;color:#9FB6CD;min-width:26px;text-align:right;font-variant-numeric:tabular-nums}
+  .datos{flex:1;min-width:0}
+  .usuario{font-weight:600;word-break:break-all}
+  .nombre,.fecha{font-size:12.5px;color:var(--gris);word-break:break-word}
+  .ver{text-decoration:none;color:var(--azul);font-weight:600;font-size:13px;border:1px solid var(--linea);border-radius:100px;padding:7px 13px;white-space:nowrap}
+  .ver:hover{background:var(--azul-claro);border-color:var(--azul)}
+  .vacio{display:block;padding:36px 20px;text-align:center;color:var(--gris)}
+  .vacio strong{display:block;color:var(--tinta);font-family:var(--serif);font-size:18px;font-weight:600;margin-bottom:6px}
+  #masBtn{display:block;width:100%;margin-top:10px}
+
+  /* ── Barras de conversación ── */
+  .conv{padding:11px 0;border-top:1px solid var(--linea)}
+  .conv:first-child{border-top:0}
+  .conv .fila{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  .conv .quien{font-weight:600;word-break:break-word}
+  .conv .cuantos{font-size:12.5px;color:var(--gris);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .conv .split{display:flex;height:7px;border-radius:100px;overflow:hidden;margin-top:7px;background:var(--azul-claro)}
+  .conv .mio{background:var(--azul)}
+  .conv .suyo{background:var(--celeste)}
+  .conv .pie{font-size:12px;color:var(--gris);margin-top:5px}
+  .distintivo{font-size:11px;font-weight:600;padding:4px 10px;border-radius:100px;white-space:nowrap;letter-spacing:.01em}
+  .distintivo.mutuo{background:var(--azul);color:#fff}
+  .distintivo.sigue{background:var(--azul-claro);color:var(--azul)}
+  .distintivo.sigo{background:var(--coral-claro);color:var(--coral)}
+  .aviso.alerta-roja{background:var(--coral-claro);color:#8C2E24}
+  .aviso.alerta-roja code{background:rgba(0,0,0,.06);padding:1px 5px;border-radius:4px;word-break:break-all}
+  .filtros{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--gris);margin-top:14px;align-items:center}
+  .filtros label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .leyenda{display:flex;gap:16px;font-size:12.5px;color:var(--gris);margin-bottom:12px;flex-wrap:wrap}
+  .leyenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+
+  /* comparación entre descargas */
+  .comparacion{background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);padding:16px 18px;margin-top:18px}
+  .comp-cifras{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:6px}
+  .comp-dato{font-size:13.5px;color:var(--gris)}
+  .comp-dato b{font-family:var(--serif);font-size:26px;font-weight:600;display:block;line-height:1.1}
+  .comp-dato.malo b{color:var(--coral)}
+  .comp-dato.bueno b{color:var(--azul)}
+  .comp-pie{margin:0;font-size:13.5px;color:var(--gris)}
+  .comp-botones{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+  /* progreso de revisión */
+  .progreso-revision{background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);padding:13px 16px;margin-bottom:12px}
+  .prog-texto{font-size:13.5px;color:var(--gris)}
+  .prog-texto b{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--tinta)}
+  .prog-barra{height:6px;background:var(--azul-claro);border-radius:100px;overflow:hidden;margin:9px 0 0}
+  .prog-barra i{display:block;height:100%;background:linear-gradient(90deg,var(--azul),var(--celeste));transition:width .2s}
+  .progreso-revision .boton.chico{margin-top:11px}
+
+  /* casilla de revisado */
+  .marcar{flex:0 0 auto;width:28px;height:28px;border-radius:9px;border:1.5px solid var(--linea);
+    background:var(--papel);color:#fff;font-size:15px;font-weight:700;line-height:1;cursor:pointer;padding:0}
+  .marcar:hover{border-color:var(--azul)}
+  .marcar.si{background:var(--azul);border-color:var(--azul)}
+  ul.lista li.revisada{background:#F7FAFD}
+  ul.lista li.revisada .usuario{text-decoration:line-through;opacity:.5}
+  ul.lista li.revisada .nombre,ul.lista li.revisada .fecha{opacity:.5}
+
+  /* rankings de frases */
+  ol.ranking{list-style:none;margin:0;padding:0}
+  ol.ranking li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--linea)}
+  ol.ranking li:first-child{border-top:0}
+  .rk-pos{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--celeste);min-width:24px}
+  .rk-txt{flex:1;font-weight:600;word-break:break-word}
+  .rk-n{font-size:12.5px;color:var(--gris);font-variant-numeric:tabular-nums}
+
+  .nube{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:baseline}
+  .palabra{font-weight:600;color:var(--azul);line-height:1.3}
+  .palabra i{font-style:normal;font-size:11px;color:var(--gris);margin-left:4px;font-weight:400}
+  .emojis{display:flex;flex-wrap:wrap;gap:16px}
+  .emoji-item{text-align:center}
+  .emoji-item b{display:block;font-size:30px;line-height:1.2}
+  .emoji-item i{font-style:normal;font-size:12px;color:var(--gris)}
+
+  .marco-tarjeta{max-width:330px;margin:0 auto;border-radius:16px;overflow:hidden;box-shadow:0 8px 28px rgba(10,46,82,.22)}
+  .marco-tarjeta svg{width:100%;height:auto;display:block}
+
+  footer{margin-top:38px;text-align:center;font-size:12.5px;color:var(--gris)}
+  footer b{font-family:var(--serif);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ══════════ PANTALLA 1: ENTRADA OBLIGATORIA ══════════ -->
+<div id="bienvenida">
+  <header class="cabecera">
+    <svg class="anillos" viewBox="0 0 200 200" aria-hidden="true">
+      <g fill="none">
+        <circle cx="100" cy="100" r="26" stroke="#1668C7" stroke-opacity=".55" stroke-width="1.6"/>
+        <circle cx="100" cy="100" r="48" stroke="#2FB6EE" stroke-opacity=".55" stroke-width="1.3"/>
+        <circle cx="100" cy="100" r="70" stroke="#1668C7" stroke-opacity=".3" stroke-width="1.1"/>
+        <circle cx="100" cy="100" r="92" stroke="#2FB6EE" stroke-opacity=".3" stroke-width=".9"/>
+      </g>
+      <circle cx="100" cy="100" r="6.5" fill="#2FB6EE"/>
+    </svg>
+    <h1 class="marca">ec<em>o</em></h1>
+    <p class="bajada">Tu red, tu crecimiento y tus conversaciones, leídos sin salir de tu dispositivo.</p>
+    <div class="sello">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      Nada sale de tu dispositivo. Lo único que se guarda, si tú lo pides, queda en este teléfono.
+    </div>
+  </header>
+
+  <div class="zona" id="zona">
+    <h2>Para empezar, trae tus datos</h2>
+    <p>eco no tiene contenido propio: todo lo que muestra sale de tu descarga de Instagram. Suelta el <b>ZIP</b> completo, sin descomprimir. Si Instagram te lo mandó partido en varios, puedes elegirlos todos juntos.</p>
+    <label class="boton" for="entrada">Elegir archivos</label>
+    <input type="file" id="entrada" multiple>
+    <div class="nota-carga">Desde el celular: el ZIP suele estar en Archivos o Descargas.</div>
+    <div class="barra oculto" id="barra"><i id="barraRelleno"></i></div>
+    <div class="estado" id="estado"></div>
+  </div>
+
+  <details>
+    <summary>¿De dónde saco estos archivos?</summary>
+    <ol>
+      <li>En Instagram: <b>Configuración → Centro de cuentas → Tu información y permisos → Descargar tu información</b>.</li>
+      <li>Elige <b>parte de tu información</b> y marca <b>Seguidores y seguidos</b>. Si además quieres el análisis de conversaciones, marca también <b>Mensajes</b>.</li>
+      <li>Formato <b>JSON</b> (no HTML). Rango: <b>todo el tiempo</b>.</li>
+      <li>Instagram avisa por correo cuando el ZIP está listo. Con mensajes incluidos puede pesar varios GB y tardar más.</li>
+      <li>Vuelve acá y suelta el ZIP tal cual, sin descomprimir.</li>
+    </ol>
+  </details>
+
+  <details>
+    <summary>¿Qué voy a ver?</summary>
+    <ul>
+      <li><b>Red</b> — quién no te devuelve el seguimiento, quiénes son mutuos, a quién no sigues de vuelta.</li>
+      <li><b>Crecimiento</b> — cuándo llegó cada seguidor, tus meses peak, tus seguidores más antiguos y qué tan recíproca fue cada época.</li>
+      <li><b>Mensajes</b> — con quién hablas de verdad, a qué hora, quién escribe más en cada conversación. Solo si incluiste esa sección en la descarga.</li>
+    </ul>
+  </details>
+
+  <div id="instalar">
+    <div class="txt">
+      <strong>Tenla a mano</strong>
+      <span>Se agrega a tu pantalla de inicio y abre sin navegador.</span>
+    </div>
+    <button id="instalarBtn">Instalar</button>
+  </div>
+  <div id="pasos">
+    <h3>Cómo agregarla en tu iPhone</h3>
+    <ol>
+      <li>Toca el botón <b>Compartir</b> abajo en Safari (el cuadrado con la flecha hacia arriba).</li>
+      <li>Baja en la lista y elige <b>Agregar a pantalla de inicio</b>.</li>
+      <li>Confirma con <b>Agregar</b>.</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ══════════ PANTALLA 2: LA APP ══════════ -->
+<div id="app" class="oculto">
+  <div class="topbar">
+    <div class="logo">ec<em>o</em></div>
+    <div class="sep"></div>
+    <button class="boton chico" id="agregarBtn">Agregar archivos</button>
+    <button class="boton chico" id="salirBtn">Borrar y salir</button>
+  </div>
+
+  <div class="secciones">
+    <button class="seccion-btn activa" data-sec="red">Red</button>
+    <button class="seccion-btn" data-sec="crecimiento">Crecimiento</button>
+    <button class="seccion-btn" data-sec="mensajes">Mensajes</button>
+    <button class="seccion-btn" data-sec="tarjeta">Tarjeta</button>
+  </div>
+
+  <!-- ── RED ── -->
+  <section id="sec-red">
+    <div class="cifras">
+      <div class="cifra"><b id="cSeguidores">0</b><span>te siguen</span></div>
+      <div class="cifra"><b id="cSeguidos">0</b><span>sigues</span></div>
+      <div class="cifra"><b id="cMutuos">0</b><span>mutuos</span></div>
+      <div class="cifra alerta"><b id="cNoDevuelven">0</b><span>sin eco</span></div>
+    </div>
+    <div class="aviso alerta-roja oculto" id="diagnostico"></div>
+    <div class="comparacion oculto" id="comparacion"></div>
+    <div class="pestanas" id="pestanas"></div>
+    <div class="controles">
+      <input type="text" id="buscador" placeholder="Buscar cuenta…">
+      <select id="orden">
+        <option value="fecha_desc">Más recientes primero</option>
+        <option value="fecha_asc">Más antiguos primero</option>
+        <option value="alfa">A–Z</option>
+        <option value="estado">Agrupar por estado</option>
+      </select>
+      <button class="boton chico" id="copiarBtn">Copiar lista</button>
+      <button class="boton chico" id="csvBtn">Descargar CSV</button>
+    </div>
+    <p class="contexto" id="contexto"></p>
+    <div class="progreso-revision oculto" id="progresoRevision"></div>
+    <ul class="lista" id="lista"></ul>
+    <button class="boton chico" id="masBtn" style="display:none">Mostrar más</button>
+  </section>
+
+  <!-- ── CRECIMIENTO ── -->
+  <section id="sec-crecimiento" class="oculto"></section>
+
+  <!-- ── MENSAJES ── -->
+  <section id="sec-mensajes" class="oculto"></section>
+
+  <!-- ── TARJETA ── -->
+  <section id="sec-tarjeta" class="oculto"></section>
+</div>
+
+<footer><b>eco</b> — hecho para revisar tu propia red, sin intermediarios.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  // ═════════════════════════════════════════
+  // Estado (todo en memoria, nada persiste)
+  // ═════════════════════════════════════════
+  var datos = { seguidores: [], seguidos: [], pendientes: [] };
+  var cargado = { seguidores:false, seguidos:false, pendientes:false };
+  var hilos = [];              // conversaciones agregadas (sin texto de mensajes)
+  var grupos = {};
+  var pestanaActiva = "todos";
+  var visibles = 100;
+  var mensajes = [];
+  var yo = null;               // nombre detectado de la dueña de la cuenta
+  var conteoRemitente = {};    // cuántos mensajes escribió cada persona
+  var frasesPor = {};          // mensajes cortos repetidos, por persona
+  var palabrasPor = {};        // palabras sueltas, por persona
+  var emojisPor = {};          // emojis, por persona
+
+  var VACIAS = ("de la que el en y a los se del las un por con no una su para es al lo como mas pero " +
+    "sus le ya o este si porque esta entre cuando muy sin sobre tambien me hasta hay donde quien desde " +
+    "todo nos durante todos uno les ni contra otros ese eso ante ellos e esto mi antes algunos que unos " +
+    "yo otro otras otra el tanto esa estos mucho quienes nada muchos cual sea poco ella estar haber estas " +
+    "estaba estamos algunas algo nosotros mi mis tu te ti tus ellas nosotras vosotros vosotras os mio mia " +
+    "tuyo tuya suyo suya nuestro nuestra vuestro vuestra esos esas hacer ser fue son era ir voy va vamos " +
+    "bien mas asi ahi aca alla igual entonces despues ahora hoy dia").split(" ");
+
+  var PESTANAS = [
+    { id:"todos",        etiqueta:"Todos",         contexto:"Toda tu red en una sola lista: cada cuenta con su estado." },
+    { id:"no_devuelven", etiqueta:"Sin eco",        contexto:"Cuentas que sigues y que no te siguen de vuelta." },
+    { id:"no_sigues",    etiqueta:"No los sigues",  contexto:"Cuentas que te siguen y que tú no sigues." },
+    { id:"mutuos",       etiqueta:"Mutuos",         contexto:"Se siguen mutuamente." },
+    { id:"seguidores",   etiqueta:"Tus seguidores", contexto:"Todas las cuentas que te siguen." },
+    { id:"seguidos",     etiqueta:"Los que sigues", contexto:"Todas las cuentas que sigues." },
+    { id:"se_fueron",    etiqueta:"Te dejaron",     contexto:"Te seguían cuando guardaste la foto anterior y ya no." },
+    { id:"llegaron",     etiqueta:"Llegaron",       contexto:"Empezaron a seguirte desde tu foto anterior." },
+    { id:"pendientes",   etiqueta:"Solicitudes enviadas", contexto:"Solicitudes que enviaste y siguen sin respuesta." }
+  ];
+
+  var MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function miles(n){ return Number(n).toLocaleString("es-CL"); }
+
+  // ── Guardado local. Solo se usa para lo que la usuaria pide explícitamente:
+  // las cuentas que marcó como revisadas y la foto de su red para comparar.
+  // Nunca se guarda texto de mensajes.
+  var LLAVE_REVISADAS = "eco:revisadas";
+  var LLAVE_FOTO      = "eco:foto";
+  var revisadas = {};
+  var foto = null;
+
+  function guardarLocal(llave, valor){
+    try{ localStorage.setItem(llave, JSON.stringify(valor)); return true; }
+    catch(e){ return false; }
+  }
+  function leerLocal(llave){
+    try{ var t = localStorage.getItem(llave); return t ? JSON.parse(t) : null; }
+    catch(e){ return null; }
+  }
+  function borrarLocal(llave){ try{ localStorage.removeItem(llave); }catch(e){} }
+
+  // Clave de comparación: sin espacios, sin @, sin barra final, en minúsculas
+  // y con los acentos en una sola forma Unicode. Si un archivo trae el usuario
+  // escrito distinto que el otro, sin esto no calzan y todo sale "sin eco".
+  function normalizar(u){
+    if(!u) return "";
+    var s = String(u).trim().toLowerCase().replace(/^@+/,"").replace(/\/+$/,"");
+    try{ s = s.normalize("NFKC"); }catch(e){}
+    return s;
+  }
+  function usuarioDesdeHref(href){
+    if(!href) return "";
+    var s = String(href).split("?")[0].split("#")[0].replace(/\/+$/,"");
+    return normalizar(s.split("/").pop());
+  }
+
+  // Instagram exporta el texto en UTF-8 leído como latin-1: "Martín" llega roto.
+  function arreglarTexto(txt){
+    if(!txt) return "";
+    if(!/[\u00c2-\u00c3][\u0080-\u00bf]/.test(txt)) return txt;
+    try{
+      var bytes = new Uint8Array(txt.length);
+      for(var i=0;i<txt.length;i++){ bytes[i] = txt.charCodeAt(i) & 0xff; }
+      return new TextDecoder("utf-8").decode(bytes);
+    }catch(e){ return txt; }
+  }
+  function formatearFecha(ts){
+    if(!ts) return "";
+    var d = new Date(ts*1000);
+    if(isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("es-CL",{ day:"2-digit", month:"short", year:"numeric" });
+  }
+
+  // ═════════════════════════════════════════
+  // Lectura de archivos de red (seguidores/seguidos)
+  // ═════════════════════════════════════════
+  function extraerCuentas(json){
+    var arr = null;
+    if(Array.isArray(json)){ arr = json; }
+    else if(json && typeof json === "object"){
+      for(var k in json){
+        if(Object.prototype.hasOwnProperty.call(json,k) && Array.isArray(json[k])){ arr = json[k]; break; }
+      }
+    }
+    if(!arr) return [];
+    var salida = [];
+    for(var i=0;i<arr.length;i++){
+      var item = arr[i];
+      if(typeof item === "string"){
+        salida.push({ usuario:item, clave:normalizar(item), claveHref:"", href:"https://www.instagram.com/"+item, ts:0, nombre:"" });
+        continue;
+      }
+      if(!item || !Array.isArray(item.string_list_data) || !item.string_list_data.length) continue;
+      var d = item.string_list_data[0];
+      var usuario = d.value || "";
+      var porHref = usuarioDesdeHref(d.href);
+      if(!usuario){ usuario = porHref; }
+      if(!usuario) continue;
+      usuario = arreglarTexto(usuario);
+      salida.push({
+        usuario: usuario,
+        clave: normalizar(usuario),
+        claveHref: porHref,
+        href: d.href || ("https://www.instagram.com/"+usuario),
+        ts: d.timestamp || 0,
+        nombre: arreglarTexto(item.title || "")
+      });
+    }
+    return salida;
+  }
+
+  function esArchivoMensajes(ruta){
+    return /message_\d+\.json$/i.test(String(ruta).split("/").pop());
+  }
+
+  function clasificar(nombreArchivo, json){
+    var n = String(nombreArchivo).split("/").pop().toLowerCase();
+    if(esArchivoMensajes(n)) return "mensajes";
+    if(/hashtag|close_friends|blocked|restricted|unfollowed|received|hide_story|suggest|dismissed/.test(n)) return null;
+    if(/pending|requests_sent/.test(n)) return "pendientes";
+    if(n.indexOf("following") !== -1) return "seguidos";
+    if(n.indexOf("follower") !== -1) return "seguidores";
+    if(json && !Array.isArray(json)){
+      if(Array.isArray(json.messages) && Array.isArray(json.participants)) return "mensajes";
+      var claves = Object.keys(json).join(" ");
+      if(claves.indexOf("follow_requests_sent") !== -1) return "pendientes";
+      if(claves.indexOf("relationships_following") !== -1) return "seguidos";
+      if(claves.indexOf("relationships_followers") !== -1) return "seguidores";
+    }
+    return null;
+  }
+
+  function agregarCuentas(tipo, cuentas){
+    if(!tipo || !cuentas.length) return 0;
+    var existentes = {}, nuevos = 0, i;
+    for(i=0;i<datos[tipo].length;i++){ existentes[datos[tipo][i].clave] = true; }
+    for(i=0;i<cuentas.length;i++){
+      var clave = cuentas[i].clave;
+      if(!clave || existentes[clave]) continue;
+      existentes[clave] = true;
+      datos[tipo].push(cuentas[i]);
+      nuevos++;
+    }
+    cargado[tipo] = true;
+    return nuevos;
+  }
+
+  // ═════════════════════════════════════════
+  // Lectura de conversaciones
+  // Se guardan SOLO totales. El texto de los mensajes nunca se conserva.
+  // ═════════════════════════════════════════
+  // Cuenta muletillas sin guardar el texto: solo sobreviven los contadores.
+  var RE_EMOJI = null;
+  try{ RE_EMOJI = new RegExp("\\p{Extended_Pictographic}", "gu"); }catch(e){ RE_EMOJI = null; }
+
+  function registrarTexto(quien, texto){
+    if(!texto) return;
+    var t = texto.trim();
+    if(!t || t.length > 300) return;
+    if(/^https?:\/\//i.test(t)) return;
+    // avisos del sistema del propio export
+    if(/(sent an attachment|envió un archivo adjunto|liked a message|reaccionó)/i.test(t)) return;
+
+    // emojis
+    if(RE_EMOJI){
+      var eno = t.match(RE_EMOJI);
+      if(eno){
+        if(!emojisPor[quien]) emojisPor[quien] = {};
+        for(var e=0;e<eno.length && e<12;e++){
+          emojisPor[quien][eno[e]] = (emojisPor[quien][eno[e]]||0) + 1;
+        }
+      }
+    }
+
+    var limpio = t.toLowerCase()
+      .replace(/[.,;:!¡?¿"«»()\[\]…]/g," ")
+      .replace(/\s+/g," ").trim();
+    if(!limpio) return;
+
+    // frase completa, solo si es corta (las muletillas lo son)
+    var palabras = limpio.split(" ");
+    if(palabras.length <= 6 && limpio.length <= 40){
+      if(!frasesPor[quien]) frasesPor[quien] = {};
+      if(Object.keys(frasesPor[quien]).length < 9000 || frasesPor[quien][limpio]){
+        frasesPor[quien][limpio] = (frasesPor[quien][limpio]||0) + 1;
+      }
+    }
+
+    // palabras sueltas con contenido
+    if(!palabrasPor[quien]) palabrasPor[quien] = {};
+    for(var w=0;w<palabras.length;w++){
+      var pal = palabras[w];
+      if(pal.length < 4) continue;
+      if(VACIAS.indexOf(pal) !== -1) continue;
+      if(/^\d+$/.test(pal)) continue;
+      if(Object.keys(palabrasPor[quien]).length >= 9000 && !palabrasPor[quien][pal]) continue;
+      palabrasPor[quien][pal] = (palabrasPor[quien][pal]||0) + 1;
+    }
+  }
+
+  // Mantiene en memoria solo a quienes más escriben. Con muchas conversaciones,
+  // guardar el vocabulario de todos revienta el navegador del celular.
+  function podarRemitentes(){
+    var nombres = Object.keys(conteoRemitente);
+    if(nombres.length <= 8) return;
+    nombres.sort(function(a,b){ return conteoRemitente[b]-conteoRemitente[a]; });
+    for(var i=8;i<nombres.length;i++){
+      delete frasesPor[nombres[i]];
+      delete palabrasPor[nombres[i]];
+      delete emojisPor[nombres[i]];
+    }
+  }
+
+  function topDe(mapa, cuantos){
+    if(!mapa) return [];
+    var pares = [];
+    for(var k in mapa){
+      if(Object.prototype.hasOwnProperty.call(mapa,k)) pares.push({ et:k, v:mapa[k] });
+    }
+    pares.sort(function(a,b){ return b.v-a.v; });
+    return pares.slice(0, cuantos);
+  }
+
+  function procesarHilo(json, rutaCarpeta){
+    if(!json || !Array.isArray(json.messages)) return;
+
+    var participantes = (json.participants||[]).map(function(p){ return arreglarTexto(p.name||""); });
+    var titulo = arreglarTexto(json.title || participantes.join(", ") || "Sin nombre");
+    var clave = rutaCarpeta || titulo;
+
+    var hilo = null;
+    for(var h=0;h<hilos.length;h++){ if(hilos[h].clave === clave){ hilo = hilos[h]; break; } }
+    if(!hilo){
+      hilo = {
+        clave: clave, titulo: titulo,
+        participantes: participantes.length,
+        esGrupo: participantes.length > 2,
+        total: 0, porPersona: {}, porHora: new Array(24).fill(0),
+        porAnio: {}, compartidos: 0, multimedia: 0,
+        primero: 0, ultimo: 0
+      };
+      hilos.push(hilo);
+    }
+
+    for(var i=0;i<json.messages.length;i++){
+      var m = json.messages[i];
+      if(!m) continue;
+      var quien = arreglarTexto(m.sender_name || "?");
+      var ts = m.timestamp_ms || 0;
+
+      hilo.total++;
+      hilo.porPersona[quien] = (hilo.porPersona[quien]||0) + 1;
+      conteoRemitente[quien] = (conteoRemitente[quien]||0) + 1;
+      if(m.share) hilo.compartidos++;
+      if(m.photos || m.videos || m.audio_files) hilo.multimedia++;
+      if(m.content && !m.share){ registrarTexto(quien, arreglarTexto(m.content)); }
+
+      if(ts){
+        var d = new Date(ts);
+        hilo.porHora[d.getHours()]++;
+        var a = d.getFullYear();
+        hilo.porAnio[a] = (hilo.porAnio[a]||0) + 1;
+        if(!hilo.primero || ts < hilo.primero) hilo.primero = ts;
+        if(ts > hilo.ultimo) hilo.ultimo = ts;
+      }
+    }
+  }
+
+  // La dueña de la cuenta es quien aparece como remitente en más conversaciones.
+  function detectarYo(){
+    var conteo = {};
+    for(var i=0;i<hilos.length;i++){
+      for(var nombre in hilos[i].porPersona){
+        if(!Object.prototype.hasOwnProperty.call(hilos[i].porPersona,nombre)) continue;
+        conteo[nombre] = (conteo[nombre]||0) + 1;
+      }
+    }
+    var mejor = null, max = 0;
+    for(var n in conteo){
+      if(conteo[n] > max){ max = conteo[n]; mejor = n; }
+    }
+    yo = mejor;
+  }
+
+  // ═════════════════════════════════════════
+  // Carga (ZIP y archivos sueltos)
+  // ═════════════════════════════════════════
+  function mostrarEstado(){
+    var html = mensajes.slice(-8).join("<br>");
+    if(cargado.seguidores && !cargado.seguidos){ html += "<br>Falta el archivo de <b>seguidos</b> para comparar."; }
+    if(cargado.seguidos && !cargado.seguidores){ html += "<br>Falta el archivo de <b>seguidores</b> para comparar."; }
+    $("estado").innerHTML = html;
+  }
+  function progreso(pct){
+    if(pct === null){ $("barra").classList.add("oculto"); return; }
+    $("barra").classList.remove("oculto");
+    $("barraRelleno").style.width = Math.round(pct*100)+"%";
+  }
+
+  function procesarJSONTexto(nombre, texto, rutaCarpeta){
+    var json;
+    try{ json = JSON.parse(texto); }
+    catch(e){ mensajes.push('<span class="mal">'+esc(nombre)+": no se pudo leer, ¿es un archivo JSON?</span>"); return; }
+
+    var tipo = clasificar(nombre, json);
+    if(!tipo) return;
+
+    if(tipo === "mensajes"){ procesarHilo(json, rutaCarpeta); return; }
+
+    var cuentas = extraerCuentas(json);
+    if(!cuentas.length){ mensajes.push('<span class="mal">'+esc(nombre)+": no trae cuentas adentro</span>"); return; }
+    var nuevos = agregarCuentas(tipo, cuentas);
+    var etiqueta = tipo === "seguidores" ? "seguidores" : (tipo === "seguidos" ? "seguidos" : "solicitudes enviadas");
+    mensajes.push('<span class="ok">✓ '+esc(nombre)+" → "+miles(nuevos)+" "+etiqueta+"</span>");
+  }
+
+  function procesarZip(archivo){
+    if(typeof JSZip === "undefined"){
+      mensajes.push('<span class="mal">No se pudo abrir el ZIP: falta conexión para cargar el lector. Descomprímelo y sube los .json sueltos.</span>');
+      mostrarEstado(); return;
+    }
+
+    var mb = archivo.size / (1024*1024);
+    mensajes.push("Abriendo "+esc(archivo.name)+" ("+(mb>=1024 ? (mb/1024).toFixed(1)+" GB" : Math.round(mb)+" MB")+")…");
+    if(mb > 500){
+      mensajes.push('<span class="mal">Es un ZIP grande. En el celular puede quedarse sin memoria; si se cuelga, ábrelo en el computador.</span>');
+    }
+    mostrarEstado();
+
+    JSZip.loadAsync(archivo).then(function(zip){
+      var red = [], convs = [], html = 0;
+      zip.forEach(function(ruta, entrada){
+        if(entrada.dir) return;
+        if(/\.html?$/i.test(ruta) && /follow|message/i.test(ruta)){ html++; return; }
+        if(!/\.json$/i.test(ruta)) return;
+        if(esArchivoMensajes(ruta)){ convs.push({ ruta:ruta, entrada:entrada }); return; }
+        if(clasificar(ruta, null)){ red.push({ ruta:ruta, entrada:entrada }); }
+      });
+
+      if(!red.length && !convs.length){
+        if(html){
+          mensajes.push('<span class="mal">Esa descarga vino en <b>HTML</b>, no en JSON. eco no puede leerla. Vuelve a pedir tus datos a Instagram eligiendo formato <b>JSON</b>.</span>');
+        } else {
+          mensajes.push('<span class="mal">Ese ZIP no trae seguidores ni mensajes. Al descargar tus datos marca "Seguidores y seguidos" y formato JSON.</span>');
+        }
+        return null;
+      }
+
+      // Primero los archivos de red (son pocos y livianos)
+      var tareasRed = red.map(function(f){
+        return f.entrada.async("string").then(function(txt){
+          procesarJSONTexto(f.ruta.split("/").pop(), txt, null);
+        });
+      });
+
+      return Promise.all(tareasRed).then(function(){
+        if(!convs.length) return;
+        mensajes.push("Procesando "+miles(convs.length)+" archivos de conversación…");
+        mostrarEstado();
+
+        // De a uno para no llenar la memoria del celular
+        var indice = 0;
+        function siguiente(){
+          if(indice >= convs.length){
+            progreso(null);
+            mensajes.push('<span class="ok">✓ '+miles(hilos.length)+" conversaciones leídas</span>");
+            return;
+          }
+          var f = convs[indice++];
+          if(indice % 15 === 0 || indice === convs.length){
+            progreso(indice/convs.length);
+            mostrarEstado();
+          }
+          if(indice % 60 === 0){ podarRemitentes(); }
+          var carpeta = f.ruta.split("/").slice(0,-1).join("/");
+          return f.entrada.async("string").then(function(txt){
+            try{ procesarHilo(JSON.parse(txt), carpeta); }catch(e){ /* hilo ilegible, se salta */ }
+            return siguiente();
+          });
+        }
+        return siguiente();
+      });
+    }).then(function(){
+      mostrarEstado();
+      terminarCarga();
+    }).catch(function(err){
+      progreso(null);
+      mensajes.push('<span class="mal">No se pudo abrir '+esc(archivo.name)+'. Puede estar dañado, protegido con clave, o ser demasiado grande para la memoria de este dispositivo.</span>');
+      mostrarEstado();
+    });
+  }
+
+  function recibirArchivos(archivos){
+    if(!archivos || !archivos.length) return;
+    var faltan = 0;
+    function listo(){ faltan--; if(faltan <= 0){ mostrarEstado(); terminarCarga(); } }
+
+    for(var i=0;i<archivos.length;i++){
+      var f = archivos[i];
+      if(/\.zip$/i.test(f.name)){ procesarZip(f); continue; }
+      if(!/\.json$/i.test(f.name)){
+        mensajes.push('<span class="mal">'+esc(f.name)+": no es .json ni .zip</span>");
+        continue;
+      }
+      faltan++;
+      (function(archivo){
+        var lector = new FileReader();
+        lector.onload = function(ev){
+          // en archivos sueltos usamos el nombre como clave de conversación
+          procesarJSONTexto(archivo.name, ev.target.result, archivo.name + "-" + archivo.size);
+          listo();
+        };
+        lector.onerror = function(){ mensajes.push('<span class="mal">'+esc(archivo.name)+": no se pudo abrir</span>"); listo(); };
+        lector.readAsText(archivo,"utf-8");
+      })(f);
+    }
+    mostrarEstado();
+  }
+
+  function terminarCarga(){
+    var hayRed = datos.seguidores.length || datos.seguidos.length;
+    var hayMsg = hilos.length > 0;
+    if(!hayRed && !hayMsg) return;
+
+    if(hayMsg){ detectarYo(); }
+    calcularRed();
+    pintarCrecimiento();
+    pintarMensajes();
+    pintarTarjeta();
+
+    document.querySelector('[data-sec="mensajes"]').disabled = !hayMsg;
+    document.querySelector('[data-sec="crecimiento"]').disabled = !hayRed;
+
+    $("bienvenida").classList.add("oculto");
+    $("app").classList.remove("oculto");
+    window.scrollTo(0,0);
+  }
+
+  // ═════════════════════════════════════════
+  // SECCIÓN RED
+  // ═════════════════════════════════════════
+  function calcularRed(){
+    var i, c;
+
+    // Un mismo usuario puede venir escrito distinto en cada archivo, así que
+    // se indexa por la clave del nombre y también por la que sale del enlace.
+    function indexar(lista){
+      var set = {};
+      for(var k=0;k<lista.length;k++){
+        if(lista[k].clave) set[lista[k].clave] = true;
+        if(lista[k].claveHref) set[lista[k].claveHref] = true;
+      }
+      return set;
+    }
+    function estaEn(set, cuenta){
+      return !!(set[cuenta.clave] || (cuenta.claveHref && set[cuenta.claveHref]));
+    }
+
+    var setSeguidores = indexar(datos.seguidores);
+    var setSeguidos   = indexar(datos.seguidos);
+
+    grupos.seguidores   = datos.seguidores.slice();
+    grupos.seguidos     = datos.seguidos.slice();
+    grupos.pendientes   = datos.pendientes.slice();
+    grupos.no_devuelven = datos.seguidos.filter(function(c){ return !estaEn(setSeguidores,c); });
+    grupos.no_sigues    = datos.seguidores.filter(function(c){ return !estaEn(setSeguidos,c); });
+    grupos.mutuos       = datos.seguidos.filter(function(c){ return estaEn(setSeguidores,c); });
+
+    // Lista unificada: cada cuenta una sola vez, con su estado
+    var vistos = {}, todos = [];
+    function sumar(cuenta, meSigue, loSigo){
+      if(vistos[cuenta.clave]) return;
+      vistos[cuenta.clave] = true;
+      var copia = {};
+      for(var p in cuenta){ if(Object.prototype.hasOwnProperty.call(cuenta,p)) copia[p] = cuenta[p]; }
+      copia.meSigue = meSigue;
+      copia.loSigo = loSigo;
+      copia.estado = meSigue && loSigo ? "mutuo" : (meSigue ? "sigue" : "sigo");
+      todos.push(copia);
+    }
+    for(i=0;i<datos.seguidos.length;i++){
+      c = datos.seguidos[i];
+      sumar(c, estaEn(setSeguidores,c), true);
+    }
+    for(i=0;i<datos.seguidores.length;i++){
+      c = datos.seguidores[i];
+      sumar(c, true, estaEn(setSeguidos,c));
+    }
+    grupos.todos = todos;
+
+    // Comparación con la foto anterior de la red
+    grupos.se_fueron = [];
+    grupos.llegaron = [];
+    if(foto && foto.seguidores && foto.seguidores.length){
+      var ahora = {};
+      for(i=0;i<datos.seguidores.length;i++){
+        ahora[datos.seguidores[i].clave] = datos.seguidores[i];
+        if(datos.seguidores[i].claveHref) ahora[datos.seguidores[i].claveHref] = datos.seguidores[i];
+      }
+      var antes = {};
+      for(i=0;i<foto.seguidores.length;i++){ antes[foto.seguidores[i]] = true; }
+
+      for(i=0;i<foto.seguidores.length;i++){
+        var cl = foto.seguidores[i];
+        if(!ahora[cl]){
+          grupos.se_fueron.push({ usuario:cl, clave:cl, claveHref:"", nombre:"", ts:0,
+                                  href:"https://www.instagram.com/"+cl });
+        }
+      }
+      for(i=0;i<datos.seguidores.length;i++){
+        c = datos.seguidores[i];
+        if(!antes[c.clave] && !(c.claveHref && antes[c.claveHref])) grupos.llegaron.push(c);
+      }
+    }
+    pintarComparacion();
+
+    $("cSeguidores").textContent  = miles(datos.seguidores.length);
+    $("cSeguidos").textContent    = miles(datos.seguidos.length);
+    $("cMutuos").textContent      = miles(grupos.mutuos.length);
+    $("cNoDevuelven").textContent = miles(grupos.no_devuelven.length);
+
+    // Si hay datos de los dos lados y aun así no calza ni uno, algo pasa con
+    // los archivos: mostramos ejemplos de lo que se está comparando.
+    var alerta = $("diagnostico");
+    if(datos.seguidores.length && datos.seguidos.length && !grupos.mutuos.length){
+      var muestraA = datos.seguidores.slice(0,3).map(function(x){ return x.clave; }).join(", ");
+      var muestraB = datos.seguidos.slice(0,3).map(function(x){ return x.clave; }).join(", ");
+      alerta.innerHTML = "<b>Cero coincidencias, y eso es raro.</b> Se están comparando estos seguidores: <code>"+
+        esc(muestraA)+"</code> contra estos seguidos: <code>"+esc(muestraB)+
+        "</code>. Si son formatos distintos, los archivos cargados no son el par correcto.";
+      alerta.classList.remove("oculto");
+    } else {
+      alerta.classList.add("oculto");
+    }
+
+    dibujarPestanas();
+    renderLista();
+  }
+
+  function dibujarPestanas(){
+    var cont = $("pestanas");
+    cont.innerHTML = "";
+    for(var i=0;i<PESTANAS.length;i++){
+      var p = PESTANAS[i];
+      var lista = grupos[p.id] || [];
+      if(!lista.length && p.id !== "todos") continue;
+      var b = document.createElement("button");
+      b.className = "pestana";
+      if(p.id === pestanaActiva){ b.classList.add("activa"); }
+      b.innerHTML = esc(p.etiqueta)+'<span class="n">'+miles(lista.length)+"</span>";
+      b.onclick = (function(id){
+        return function(){ pestanaActiva = id; visibles = 100; dibujarPestanas(); renderLista(); };
+      })(p.id);
+      cont.appendChild(b);
+    }
+  }
+
+  function listaFiltrada(){
+    var lista = (grupos[pestanaActiva] || []).slice();
+    var q = $("buscador").value.trim().toLowerCase();
+    if(q){
+      lista = lista.filter(function(c){
+        return c.usuario.toLowerCase().indexOf(q) !== -1 || (c.nombre||"").toLowerCase().indexOf(q) !== -1;
+      });
+    }
+    var orden = $("orden").value;
+    if(orden === "alfa"){ lista.sort(function(a,b){ return a.usuario.toLowerCase() < b.usuario.toLowerCase() ? -1 : 1; }); }
+    else if(orden === "fecha_asc"){ lista.sort(function(a,b){ return (a.ts||0)-(b.ts||0); }); }
+    else if(orden === "estado" && pestanaActiva === "todos"){
+      var peso = { mutuo:0, sigue:1, sigo:2 };
+      lista.sort(function(a,b){
+        var d = peso[a.estado]-peso[b.estado];
+        return d !== 0 ? d : (b.ts||0)-(a.ts||0);
+      });
+    }
+    else { lista.sort(function(a,b){ return (b.ts||0)-(a.ts||0); }); }
+    return lista;
+  }
+
+  // ── Panel de comparación entre descargas ──
+  function pintarComparacion(){
+    var cont = $("comparacion");
+    var h = "";
+
+    if(foto && foto.fecha){
+      var d = new Date(foto.fecha);
+      var cuando = d.toLocaleDateString("es-CL",{ day:"2-digit", month:"long", year:"numeric" });
+      h += '<div class="comp-cifras">';
+      h += '<span class="comp-dato malo"><b>'+miles(grupos.se_fueron.length)+'</b> te dejaron</span>';
+      h += '<span class="comp-dato bueno"><b>'+miles(grupos.llegaron.length)+'</b> llegaron</span>';
+      h += '</div>';
+      h += '<p class="comp-pie">Comparado con la foto del '+esc(cuando)+'.</p>';
+      h += '<div class="comp-botones">';
+      h += '<button class="boton chico" id="actualizarFoto">Actualizar foto a hoy</button>';
+      h += '<button class="boton chico" id="borrarFoto">Borrar lo guardado</button>';
+      h += '</div>';
+    } else {
+      h += '<p class="comp-pie"><b>Guarda una foto de tu red.</b> La próxima vez que cargues tus datos, eco te dirá quién te dejó de seguir. Instagram no da ese dato por ningún lado.</p>';
+      h += '<div class="comp-botones"><button class="boton chico" id="guardarFoto">Guardar foto de hoy</button></div>';
+    }
+    cont.innerHTML = h;
+    cont.classList.remove("oculto");
+
+    var bG = $("guardarFoto"), bA = $("actualizarFoto"), bB = $("borrarFoto");
+    if(bG) bG.onclick = tomarFoto;
+    if(bA) bA.onclick = function(){
+      if(confirm("La foto de hoy reemplaza a la anterior y la comparación se reinicia. ¿Seguimos?")) tomarFoto();
+    };
+    if(bB) bB.onclick = function(){
+      if(!confirm("Se borra la foto guardada y las marcas de revisado. ¿Seguimos?")) return;
+      borrarLocal(LLAVE_FOTO); borrarLocal(LLAVE_REVISADAS);
+      foto = null; revisadas = {};
+      calcularRed();
+    };
+  }
+
+  function tomarFoto(){
+    var claves = datos.seguidores.map(function(c){ return c.clave; });
+    var nueva = { fecha: Date.now(), seguidores: claves };
+    if(guardarLocal(LLAVE_FOTO, nueva)){
+      foto = nueva;
+      calcularRed();
+    } else {
+      alert("No se pudo guardar en este navegador. Puede ser el modo privado, que bloquea el almacenamiento.");
+    }
+  }
+
+  // ── Marcar cuentas como revisadas ──
+  function alternarRevisada(clave){
+    if(revisadas[clave]){ delete revisadas[clave]; }
+    else { revisadas[clave] = 1; }
+    guardarLocal(LLAVE_REVISADAS, revisadas);
+    renderLista();
+  }
+
+  function pintarProgreso(lista){
+    var cajon = $("progresoRevision");
+    var revisables = (pestanaActiva === "no_devuelven" || pestanaActiva === "todos" || pestanaActiva === "se_fueron");
+    if(!revisables || !lista.length){ cajon.classList.add("oculto"); return; }
+
+    var hechas = 0;
+    for(var i=0;i<lista.length;i++){ if(revisadas[lista[i].clave]) hechas++; }
+    var pct = Math.round(hechas/lista.length*100);
+    cajon.innerHTML = '<div class="prog-texto"><b>'+miles(hechas)+'</b> de '+miles(lista.length)+' revisadas'+
+      (hechas ? ' · '+pct+'%' : '')+'</div>'+
+      '<div class="prog-barra"><i style="width:'+pct+'%"></i></div>'+
+      (hechas ? '<button class="boton chico" id="limpiarMarcas">Desmarcar todas</button>' : '');
+    cajon.classList.remove("oculto");
+    var b = $("limpiarMarcas");
+    if(b) b.onclick = function(){
+      if(!confirm("Se desmarcan todas las cuentas revisadas. ¿Seguimos?")) return;
+      revisadas = {}; guardarLocal(LLAVE_REVISADAS, revisadas); renderLista();
+    };
+  }
+
+  var ETIQUETA_ESTADO = { mutuo:"Mutuo", sigue:"Te sigue", sigo:"Sin eco" };
+
+  function renderLista(){
+    var lista = listaFiltrada();
+    var ul = $("lista");
+    var info = PESTANAS.filter(function(p){ return p.id === pestanaActiva; })[0];
+    var esTodos = pestanaActiva === "todos";
+
+    var texto = info ? info.contexto+" ("+miles(lista.length)+")" : "";
+    if(esTodos && grupos.todos){
+      texto = "Toda tu red: "+miles(grupos.mutuos.length)+" mutuos · "+
+              miles(grupos.no_sigues.length)+" te siguen y no los sigues · "+
+              miles(grupos.no_devuelven.length)+" sin eco. Mostrando "+miles(lista.length)+".";
+    }
+    $("contexto").textContent = texto;
+
+    if(!lista.length){
+      ul.innerHTML = '<li><span class="vacio"><strong>Nada por acá</strong>'+
+        ($("buscador").value.trim() ? "Ninguna cuenta coincide con tu búsqueda." : "Esta lista está vacía.")+"</span></li>";
+      $("masBtn").style.display = "none";
+      $("progresoRevision").classList.add("oculto");
+      return;
+    }
+
+    var revisables = (pestanaActiva === "no_devuelven" || esTodos || pestanaActiva === "se_fueron");
+    var trozo = lista.slice(0, visibles), html = "";
+    for(var i=0;i<trozo.length;i++){
+      var c = trozo[i], fecha = formatearFecha(c.ts);
+      var marcada = !!revisadas[c.clave];
+      html += '<li'+(marcada ? ' class="revisada"' : '')+">";
+      if(revisables){
+        html += '<button class="marcar'+(marcada ? " si" : "")+'" data-clave="'+esc(c.clave)+
+                '" title="Marcar como revisada" aria-label="Marcar como revisada">'+(marcada ? "✓" : "")+"</button>";
+      } else {
+        html += '<span class="idx">'+(i+1)+"</span>";
+      }
+      html += '<span class="datos"><span class="usuario">@'+esc(c.usuario)+"</span>";
+      if(c.nombre && c.nombre.toLowerCase() !== c.usuario.toLowerCase()){
+        html += '<br><span class="nombre">'+esc(c.nombre)+"</span>";
+      }
+      if(fecha){ html += '<br><span class="fecha">desde '+fecha+"</span>"; }
+      html += "</span>";
+      if(esTodos && c.estado){
+        html += '<span class="distintivo '+c.estado+'">'+ETIQUETA_ESTADO[c.estado]+"</span>";
+      }
+      html += '<a class="ver" href="'+esc(c.href)+'" target="_blank" rel="noopener noreferrer">Ver</a>';
+      html += "</li>";
+    }
+    ul.innerHTML = html;
+    pintarProgreso(lista);
+
+    if(lista.length > visibles){
+      $("masBtn").style.display = "block";
+      $("masBtn").textContent = "Mostrar 100 más ("+miles(lista.length-visibles)+" restantes)";
+    } else {
+      $("masBtn").style.display = "none";
+    }
+  }
+
+  // ═════════════════════════════════════════
+  // Gráficos en SVG (sin librerías)
+  // ═════════════════════════════════════════
+  function svgBarras(items, opciones){
+    opciones = opciones || {};
+    var W = 700, H = opciones.alto || 210;
+    var ml = 40, mr = 8, mt = 14, mb = 30;
+    var n = items.length;
+    if(!n) return "";
+    var max = 0;
+    for(var i=0;i<n;i++){ if(items[i].v > max) max = items[i].v; }
+    if(!max) max = 1;
+
+    var anchoUtil = W - ml - mr;
+    var paso = anchoUtil / n;
+    var ancho = Math.max(2, paso * 0.68);
+    var color = opciones.color || "#1668C7";
+    var s = '<svg class="grafico" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" role="img">';
+
+    // líneas guía
+    for(var g=0; g<=2; g++){
+      var val = max * g / 2;
+      var y = mt + (H-mt-mb) * (1 - g/2);
+      s += '<line x1="'+ml+'" y1="'+y+'" x2="'+(W-mr)+'" y2="'+y+'" stroke="#CFE1F2" stroke-width="1"/>';
+      s += '<text x="'+(ml-7)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#5A7794" font-family="Inter,sans-serif">'+Math.round(val)+'</text>';
+    }
+
+    var saltoEtiqueta = Math.ceil(n/9);
+    for(var j=0;j<n;j++){
+      var alto = (H-mt-mb) * (items[j].v / max);
+      var x = ml + paso*j + (paso-ancho)/2;
+      var yb = H - mb - alto;
+      var c = items[j].destacado ? "#2FB6EE" : color;
+      s += '<rect x="'+x.toFixed(1)+'" y="'+yb.toFixed(1)+'" width="'+ancho.toFixed(1)+'" height="'+Math.max(alto,1).toFixed(1)+'" rx="2.5" fill="'+c+'">';
+      s += '<title>'+esc(items[j].et)+': '+miles(items[j].v)+'</title></rect>';
+      if(j % saltoEtiqueta === 0 || j === n-1){
+        s += '<text x="'+(ml+paso*j+paso/2).toFixed(1)+'" y="'+(H-mb+16)+'" text-anchor="middle" font-size="11" fill="#5A7794" font-family="Inter,sans-serif">'+esc(items[j].et)+'</text>';
+      }
+    }
+    s += '</svg>';
+    return s;
+  }
+
+  function svgCurva(items){
+    var W = 700, H = 220, ml = 46, mr = 8, mt = 14, mb = 30;
+    var n = items.length;
+    if(n < 2) return "";
+    var max = items[n-1].v || 1;
+    var paso = (W-ml-mr) / (n-1);
+    var puntos = [], i, x, y;
+    for(i=0;i<n;i++){
+      x = ml + paso*i;
+      y = mt + (H-mt-mb) * (1 - items[i].v/max);
+      puntos.push(x.toFixed(1)+","+y.toFixed(1));
+    }
+    var s = '<svg class="grafico" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" role="img">';
+    s += '<defs><linearGradient id="degradado" x1="0" y1="0" x2="0" y2="1">';
+    s += '<stop offset="0%" stop-color="#2FB6EE" stop-opacity=".38"/><stop offset="100%" stop-color="#2FB6EE" stop-opacity="0"/></linearGradient></defs>';
+
+    for(var g=0; g<=2; g++){
+      var val = max * g / 2;
+      var yg = mt + (H-mt-mb) * (1 - g/2);
+      s += '<line x1="'+ml+'" y1="'+yg+'" x2="'+(W-mr)+'" y2="'+yg+'" stroke="#CFE1F2" stroke-width="1"/>';
+      s += '<text x="'+(ml-7)+'" y="'+(yg+4)+'" text-anchor="end" font-size="11" fill="#5A7794" font-family="Inter,sans-serif">'+miles(Math.round(val))+'</text>';
+    }
+
+    s += '<polygon fill="url(#degradado)" points="'+ml+','+(H-mb)+' '+puntos.join(" ")+' '+(W-mr)+','+(H-mb)+'"/>';
+    s += '<polyline fill="none" stroke="#1668C7" stroke-width="2.5" stroke-linejoin="round" points="'+puntos.join(" ")+'"/>';
+
+    var salto = Math.ceil(n/6);
+    for(i=0;i<n;i+=salto){
+      s += '<text x="'+(ml+paso*i).toFixed(1)+'" y="'+(H-mb+16)+'" text-anchor="middle" font-size="11" fill="#5A7794" font-family="Inter,sans-serif">'+esc(items[i].et)+'</text>';
+    }
+    s += '</svg>';
+    return s;
+  }
+
+  // ═════════════════════════════════════════
+  // SECCIÓN CRECIMIENTO
+  // ═════════════════════════════════════════
+  function porMes(lista){
+    var mapa = {}, min = null, max = null;
+    for(var i=0;i<lista.length;i++){
+      if(!lista[i].ts) continue;
+      var d = new Date(lista[i].ts*1000);
+      var k = d.getFullYear()+"-"+String(d.getMonth()).padStart(2,"0");
+      mapa[k] = (mapa[k]||0)+1;
+      var v = d.getFullYear()*12 + d.getMonth();
+      if(min === null || v < min) min = v;
+      if(max === null || v > max) max = v;
+    }
+    if(min === null) return [];
+    var salida = [];
+    for(var m=min;m<=max;m++){
+      var anio = Math.floor(m/12), mes = m%12;
+      var clave = anio+"-"+String(mes).padStart(2,"0");
+      salida.push({ et: MESES[mes]+" "+String(anio).slice(2), v: mapa[clave]||0, anio: anio });
+    }
+    return salida;
+  }
+
+  function pintarCrecimiento(){
+    var cont = $("sec-crecimiento");
+    var conFecha = datos.seguidores.filter(function(c){ return c.ts; });
+
+    if(!conFecha.length){
+      cont.innerHTML = '<div class="bloque"><h3>Sin fechas disponibles</h3><p class="sub">Tu archivo de seguidores no trae la fecha de cada seguimiento, así que no se puede reconstruir la curva.</p></div>';
+      return;
+    }
+
+    var mesesSeg = porMes(conFecha);
+    var mesesSig = porMes(datos.seguidos.filter(function(c){ return c.ts; }));
+
+    // acumulado
+    var acumulado = [], suma = 0, i;
+    for(i=0;i<mesesSeg.length;i++){ suma += mesesSeg[i].v; acumulado.push({ et: mesesSeg[i].et, v: suma }); }
+
+    // mes peak
+    var peak = mesesSeg[0];
+    for(i=1;i<mesesSeg.length;i++){ if(mesesSeg[i].v > peak.v) peak = mesesSeg[i]; }
+    for(i=0;i<mesesSeg.length;i++){ mesesSeg[i].destacado = (mesesSeg[i] === peak); }
+
+    // últimos 24 meses para las barras
+    var barras = mesesSeg.slice(-24);
+
+    // antigüedad
+    var ordenados = conFecha.slice().sort(function(a,b){ return a.ts-b.ts; });
+    var primeros = ordenados.slice(0,10);
+    var ultimoAnio = Date.now()/1000 - 365*24*3600;
+    var nuevosAnio = conFecha.filter(function(c){ return c.ts > ultimoAnio; }).length;
+
+    // reciprocidad por año de seguimiento
+    var setSeguidores = {};
+    for(i=0;i<datos.seguidores.length;i++){ setSeguidores[datos.seguidores[i].usuario.toLowerCase()] = true; }
+    var recip = {};
+    for(i=0;i<datos.seguidos.length;i++){
+      var c = datos.seguidos[i];
+      if(!c.ts) continue;
+      var a = new Date(c.ts*1000).getFullYear();
+      if(!recip[a]) recip[a] = { total:0, vuelven:0 };
+      recip[a].total++;
+      if(setSeguidores[c.usuario.toLowerCase()]) recip[a].vuelven++;
+    }
+    var anios = Object.keys(recip).sort();
+    var barrasRecip = anios.map(function(a){
+      return { et: a, v: Math.round(recip[a].vuelven / recip[a].total * 100) };
+    });
+
+    var h = "";
+
+    h += '<div class="cifras">';
+    h += '<div class="cifra"><b>'+miles(nuevosAnio)+'</b><span>llegaron este último año</span></div>';
+    h += '<div class="cifra"><b>'+esc(peak.et)+'</b><span>tu mes peak</span></div>';
+    h += '<div class="cifra"><b>'+miles(peak.v)+'</b><span>seguidores ese mes</span></div>';
+    h += '<div class="cifra"><b>'+formatearFecha(ordenados[0].ts).split(" ").slice(-1)[0]+'</b><span>tu seguidor más antiguo</span></div>';
+    h += '</div>';
+
+    h += '<div class="bloque"><h3>Cómo se fue armando tu audiencia</h3>';
+    h += '<p class="sub">Acumulado de tus seguidores actuales según cuándo empezaron a seguirte.</p>';
+    h += svgCurva(acumulado);
+    h += '<div class="aviso">Ojo: Instagram solo entrega quiénes te siguen <b>hoy</b>. Los que se fueron no aparecen, así que esta curva nunca baja aunque en su momento hayas perdido seguidores.</div>';
+    h += '</div>';
+
+    h += '<div class="bloque"><h3>Seguidores nuevos por mes</h3>';
+    h += '<p class="sub">Últimos '+barras.length+' meses. El mes más alto va en celeste: casi siempre hay una causa detrás.</p>';
+    h += svgBarras(barras, { alto:200 });
+    h += '</div>';
+
+    if(mesesSig.length){
+      var barrasSig = mesesSig.slice(-24);
+      h += '<div class="bloque"><h3>Cuándo seguiste tú a otros</h3>';
+      h += '<p class="sub">Tus propias rachas. Los peaks suelen coincidir con un evento, un curso o un tema nuevo.</p>';
+      h += svgBarras(barrasSig, { alto:180, color:"#0A2E52" });
+      h += '</div>';
+    }
+
+    if(barrasRecip.length){
+      h += '<div class="bloque"><h3>Qué tan recíproca fue cada época</h3>';
+      h += '<p class="sub">De las cuentas que seguiste cada año, qué porcentaje te sigue de vuelta hoy.</p>';
+      h += svgBarras(barrasRecip, { alto:170, color:"#2FB6EE" });
+      h += '</div>';
+    }
+
+    h += '<div class="bloque"><h3>Tus fundadores</h3>';
+    h += '<p class="sub">Las primeras diez cuentas que te siguieron y que siguen ahí.</p>';
+    h += '<ul class="lista" style="border:0">';
+    for(i=0;i<primeros.length;i++){
+      h += '<li><span class="idx">'+(i+1)+'</span><span class="datos"><span class="usuario">@'+esc(primeros[i].usuario)+'</span>';
+      h += '<br><span class="fecha">desde '+formatearFecha(primeros[i].ts)+'</span></span>';
+      h += '<a class="ver" href="'+esc(primeros[i].href)+'" target="_blank" rel="noopener noreferrer">Ver</a></li>';
+    }
+    h += '</ul></div>';
+
+    cont.innerHTML = h;
+  }
+
+  // ═════════════════════════════════════════
+  // SECCIÓN MENSAJES
+  // ═════════════════════════════════════════
+  function pintarMensajes(){
+    var cont = $("sec-mensajes");
+
+    if(!hilos.length){
+      cont.innerHTML = '<div class="bloque"><h3>No cargaste conversaciones</h3>'+
+        '<p class="sub">Esta sección necesita la carpeta <b>Mensajes</b> de tu descarga de Instagram. Al pedir tus datos, marca también esa casilla y vuelve a cargar el ZIP.</p></div>';
+      return;
+    }
+
+    var totalMsg = 0, mios = 0, compartidos = 0, multimedia = 0;
+    var horas = new Array(24).fill(0), porAnio = {}, i, hilo;
+    var primero = 0;
+
+    for(i=0;i<hilos.length;i++){
+      hilo = hilos[i];
+      totalMsg += hilo.total;
+      compartidos += hilo.compartidos;
+      multimedia += hilo.multimedia;
+      if(yo && hilo.porPersona[yo]) mios += hilo.porPersona[yo];
+      for(var hh=0;hh<24;hh++){ horas[hh] += hilo.porHora[hh]; }
+      for(var a in hilo.porAnio){
+        if(!Object.prototype.hasOwnProperty.call(hilo.porAnio,a)) continue;
+        porAnio[a] = (porAnio[a]||0) + hilo.porAnio[a];
+      }
+      if(hilo.primero && (!primero || hilo.primero < primero)) primero = hilo.primero;
+    }
+
+    var pctMios = totalMsg ? Math.round(mios/totalMsg*100) : 0;
+    var pctCompartidos = totalMsg ? Math.round(compartidos/totalMsg*100) : 0;
+
+    // hora más activa
+    var horaTop = 0;
+    for(i=1;i<24;i++){ if(horas[i] > horas[horaTop]) horaTop = i; }
+
+    var top = hilos.slice().sort(function(a,b){ return b.total-a.total; }).slice(0,12);
+
+    var h = "";
+
+    h += '<div class="cifras">';
+    h += '<div class="cifra"><b>'+miles(totalMsg)+'</b><span>mensajes en total</span></div>';
+    h += '<div class="cifra"><b>'+miles(hilos.length)+'</b><span>conversaciones</span></div>';
+    h += '<div class="cifra"><b>'+pctMios+'%</b><span>los escribiste tú</span></div>';
+    h += '<div class="cifra alerta"><b>'+horaTop+':00</b><span>tu hora más conversadora</span></div>';
+    h += '</div>';
+
+    if(yo){
+      h += '<div class="aviso" style="margin-top:14px">Detecté que tú eres <b>'+esc(yo)+'</b>, por ser quien escribe en más conversaciones. Si no es así, los porcentajes de "tú vs. ellos" van al revés.</div>';
+    }
+
+    // horas
+    var barrasHora = [];
+    for(i=0;i<24;i++){ barrasHora.push({ et: i+"h", v: horas[i] }); }
+    h += '<div class="bloque"><h3>A qué hora conversas</h3>';
+    h += '<p class="sub">Todos tus mensajes repartidos en el día, según la hora de tu dispositivo.</p>';
+    h += svgBarras(barrasHora, { alto:190 });
+    h += '</div>';
+
+    // años
+    var aniosOrden = Object.keys(porAnio).sort();
+    if(aniosOrden.length > 1){
+      var barrasAnio = aniosOrden.map(function(a){ return { et:a, v:porAnio[a] }; });
+      h += '<div class="bloque"><h3>Tu volumen año a año</h3>';
+      h += '<p class="sub">Desde '+formatearFecha(primero/1000)+', tu primer mensaje guardado.</p>';
+      h += svgBarras(barrasAnio, { alto:180, color:"#0A2E52" });
+      h += '</div>';
+    }
+
+    // top conversaciones
+    h += '<div class="bloque"><h3>Con quién hablas de verdad</h3>';
+    h += '<p class="sub">Tus doce conversaciones con más mensajes, y quién lleva el peso en cada una.</p>';
+    h += '<div class="leyenda"><span><i style="background:#1668C7"></i>tú</span><span><i style="background:#2FB6EE"></i>la otra persona</span></div>';
+    for(i=0;i<top.length;i++){
+      hilo = top[i];
+      var m = (yo && hilo.porPersona[yo]) ? hilo.porPersona[yo] : 0;
+      var otros = hilo.total - m;
+      var pm = hilo.total ? (m/hilo.total*100) : 0;
+      h += '<div class="conv">';
+      h += '<div class="fila"><span class="quien">'+esc(hilo.titulo)+(hilo.esGrupo ? ' <span class="cuantos">· grupo</span>' : '')+'</span>';
+      h += '<span class="cuantos">'+miles(hilo.total)+'</span></div>';
+      h += '<div class="split"><span class="mio" style="width:'+pm.toFixed(1)+'%"></span><span class="suyo" style="width:'+(100-pm).toFixed(1)+'%"></span></div>';
+      h += '<div class="pie">tú '+miles(m)+' · ellos '+miles(otros);
+      if(hilo.ultimo){ h += ' · último '+formatearFecha(hilo.ultimo/1000); }
+      h += '</div></div>';
+    }
+    h += '</div>';
+
+    h += '<div class="bloque"><h3>Qué tanto es conversación y qué tanto es reenvío</h3>';
+    h += '<p class="sub">De tus '+miles(totalMsg)+' mensajes, '+miles(compartidos)+' son reels o publicaciones compartidas ('+pctCompartidos+'%) y '+miles(multimedia)+' son fotos, videos o audios.</p>';
+    h += '<div class="aviso">El texto de tus conversaciones nunca se guarda: eco cuenta y descarta. Por eso no hay buscador de mensajes acá.</div>';
+    h += '</div>';
+
+    // ── Muletillas, palabras y emojis ──
+    var misFrases = topDe(frasesPor[yo], 8);
+    var misPalabras = topDe(palabrasPor[yo], 10);
+    var misEmojis = topDe(emojisPor[yo], 8);
+
+    if(misFrases.length){
+      h += '<div class="bloque"><h3>Lo que más repites</h3>';
+      h += '<p class="sub">Mensajes cortos que mandaste tal cual, una y otra vez.</p>';
+      h += '<ol class="ranking">';
+      for(i=0;i<misFrases.length;i++){
+        h += '<li><span class="rk-pos">'+(i+1)+'</span><span class="rk-txt">'+esc(misFrases[i].et)+'</span><span class="rk-n">'+miles(misFrases[i].v)+'</span></li>';
+      }
+      h += '</ol></div>';
+    }
+
+    if(misPalabras.length){
+      h += '<div class="bloque"><h3>Tu vocabulario</h3>';
+      h += '<p class="sub">Las palabras con contenido que más usas, sin contar artículos ni conectores.</p>';
+      h += '<div class="nube">';
+      var maxP = misPalabras[0].v;
+      for(i=0;i<misPalabras.length;i++){
+        var escala = 0.85 + (misPalabras[i].v/maxP)*1.05;
+        h += '<span class="palabra" style="font-size:'+escala.toFixed(2)+'rem">'+esc(misPalabras[i].et)+
+             '<i>'+miles(misPalabras[i].v)+'</i></span>';
+      }
+      h += '</div></div>';
+    }
+
+    if(misEmojis.length){
+      h += '<div class="bloque"><h3>Tus emojis</h3><div class="emojis">';
+      for(i=0;i<misEmojis.length;i++){
+        h += '<span class="emoji-item"><b>'+misEmojis[i].et+'</b><i>'+miles(misEmojis[i].v)+'</i></span>';
+      }
+      h += '</div></div>';
+    }
+
+    cont.innerHTML = h;
+  }
+
+  // ═════════════════════════════════════════
+  // TARJETA (resumen visual descargable)
+  // ═════════════════════════════════════════
+  function datosTarjeta(){
+    var d = { seguidores:0, mutuos:0, sinEco:0, mesPeak:"", hora:null, frases:[], emoji:"", conversacion:"", mensajes:0 };
+    d.seguidores = datos.seguidores.length;
+    d.mutuos = (grupos.mutuos||[]).length;
+    d.sinEco = (grupos.no_devuelven||[]).length;
+
+    var conFecha = datos.seguidores.filter(function(c){ return c.ts; });
+    if(conFecha.length){
+      var meses = porMes(conFecha), peak = meses[0];
+      for(var i=1;i<meses.length;i++){ if(meses[i].v > peak.v) peak = meses[i]; }
+      d.mesPeak = peak.et;
+    }
+
+    if(hilos.length){
+      var horas = new Array(24).fill(0), total = 0, mejor = null;
+      for(var j=0;j<hilos.length;j++){
+        total += hilos[j].total;
+        for(var k=0;k<24;k++){ horas[k] += hilos[j].porHora[k]; }
+        if(!mejor || hilos[j].total > mejor.total) mejor = hilos[j];
+      }
+      var ht = 0;
+      for(var m=1;m<24;m++){ if(horas[m] > horas[ht]) ht = m; }
+      d.hora = ht;
+      d.mensajes = total;
+      d.conversacion = mejor ? mejor.titulo : "";
+      d.frases = topDe(frasesPor[yo], 3);
+      var em = topDe(emojisPor[yo], 1);
+      d.emoji = em.length ? em[0].et : "";
+    }
+    return d;
+  }
+
+  function svgTarjeta(d){
+    var W = 1080, H = 1920;
+    function txt(x,y,t,tam,peso,color,anclaje){
+      return '<text x="'+x+'" y="'+y+'" font-size="'+tam+'" font-weight="'+peso+'" fill="'+color+
+             '" text-anchor="'+(anclaje||"start")+'" font-family="Helvetica,Arial,sans-serif">'+esc(t)+'</text>';
+    }
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'">';
+    s += '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">';
+    s += '<stop offset="0%" stop-color="#0A2E52"/><stop offset="55%" stop-color="#12518F"/><stop offset="100%" stop-color="#1668C7"/>';
+    s += '</linearGradient></defs>';
+    s += '<rect width="'+W+'" height="'+H+'" fill="url(#g)"/>';
+
+    // anillos de fondo
+    var anillos = [180,300,420,540,660];
+    for(var a=0;a<anillos.length;a++){
+      s += '<circle cx="880" cy="270" r="'+anillos[a]+'" fill="none" stroke="#2FB6EE" stroke-opacity="'+(0.16-a*0.022).toFixed(3)+'" stroke-width="3"/>';
+    }
+
+    var y = 190;
+    s += txt(90, y, "eco", 92, "700", "#FFFFFF"); y += 56;
+    s += txt(90, y, "tu instagram, en números", 34, "400", "#9FD2F4"); y += 130;
+
+    s += txt(90, y, miles(d.seguidores), 150, "700", "#FFFFFF"); y += 52;
+    s += txt(90, y, "personas te siguen", 36, "400", "#9FD2F4"); y += 120;
+
+    s += txt(90, y, miles(d.mutuos), 96, "700", "#2FB6EE");
+    s += txt(560, y, miles(d.sinEco), 96, "700", "#FFFFFF"); y += 46;
+    s += txt(90, y, "mutuos", 32, "400", "#9FD2F4");
+    s += txt(560, y, "sin eco", 32, "400", "#9FD2F4"); y += 120;
+
+    if(d.mesPeak){
+      s += txt(90, y, "tu mes peak", 32, "400", "#9FD2F4"); y += 60;
+      s += txt(90, y, d.mesPeak, 68, "700", "#FFFFFF"); y += 110;
+    }
+    if(d.hora !== null){
+      s += txt(90, y, "hablas más a las", 32, "400", "#9FD2F4"); y += 60;
+      s += txt(90, y, d.hora+":00", 68, "700", "#FFFFFF"); y += 110;
+    }
+    if(d.frases.length){
+      s += txt(90, y, "lo que más repites", 32, "400", "#9FD2F4"); y += 68;
+      for(var f=0; f<d.frases.length; f++){
+        var frase = d.frases[f].et;
+        if(frase.length > 26) frase = frase.slice(0,25)+"…";
+        s += txt(90, y, (f+1)+".", 44, "700", "#2FB6EE");
+        s += txt(160, y, frase, 52, "700", "#FFFFFF");
+        y += 76;
+      }
+      y += 40;
+    }
+    if(d.emoji){
+      s += '<text x="90" y="'+y+'" font-size="90" font-family="Helvetica,Arial,sans-serif">'+d.emoji+'</text>';
+      s += txt(210, y-22, "tu emoji del año", 32, "400", "#9FD2F4");
+      y += 110;
+    }
+
+    s += txt(90, H-90, "generado en tu propio dispositivo", 28, "400", "#6FAFDD");
+    s += '</svg>';
+    return s;
+  }
+
+  function pintarTarjeta(){
+    var cont = $("sec-tarjeta");
+    var d = datosTarjeta();
+    var h = '<div class="bloque"><h3>Tu resumen</h3>';
+    h += '<p class="sub">Una tarjeta para guardar o mandar. Se arma con lo que cargaste: mientras más secciones traigas, más completa sale.</p>';
+    h += '<div class="marco-tarjeta">'+svgTarjeta(d)+'</div>';
+    h += '<div class="comp-botones" style="margin-top:16px">';
+    h += '<button class="boton" id="bajarTarjeta">Guardar como imagen</button>';
+    h += '</div>';
+    if(!hilos.length){
+      h += '<div class="aviso" style="margin-top:14px">Sin la carpeta de mensajes quedan fuera la hora, las frases y el emoji. Carga ese paquete y la tarjeta se completa.</div>';
+    }
+    h += '</div>';
+    cont.innerHTML = h;
+
+    $("bajarTarjeta").onclick = function(){ bajarTarjeta(d); };
+  }
+
+  function bajarTarjeta(d){
+    var svg = svgTarjeta(d);
+    var blob = new Blob([svg], { type:"image/svg+xml;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var img = new Image();
+
+    img.onload = function(){
+      var lienzo = document.createElement("canvas");
+      lienzo.width = 1080; lienzo.height = 1920;
+      var ctx = lienzo.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      try{
+        lienzo.toBlob(function(png){
+          if(!png){ abrirEnPestana(svg); return; }
+          var u = URL.createObjectURL(png);
+          var a = document.createElement("a");
+          a.href = u; a.download = "eco-resumen.png";
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          setTimeout(function(){ URL.revokeObjectURL(u); }, 800);
+        }, "image/png");
+      }catch(e){ abrirEnPestana(svg); }
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); abrirEnPestana(svg); };
+    img.src = url;
+  }
+
+  // Respaldo para navegadores que no dejan descargar el lienzo: se abre la
+  // imagen y se guarda con una pulsación larga.
+  function abrirEnPestana(svg){
+    var w = window.open("");
+    if(!w){ alert("Tu navegador bloqueó la ventana. Permite las ventanas emergentes e intenta de nuevo."); return; }
+    w.document.write('<title>eco — tu resumen</title><body style="margin:0;background:#0A2E52">'+svg+
+      '<p style="color:#9FD2F4;font-family:sans-serif;text-align:center;padding:16px">Mantén presionada la imagen para guardarla.</p></body>');
+    w.document.close();
+  }
+
+  // ═════════════════════════════════════════
+  // Exportar
+  // ═════════════════════════════════════════
+  function copiar(){
+    var lista = listaFiltrada();
+    if(!lista.length) return;
+    var texto = lista.map(function(c){ return "@"+c.usuario; }).join("\n");
+    function avisar(ok){
+      $("copiarBtn").textContent = ok ? "Copiado ✓" : "No se pudo copiar";
+      setTimeout(function(){ $("copiarBtn").textContent = "Copiar lista"; }, 1800);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(texto).then(function(){ avisar(true); }, function(){ avisar(false); });
+    } else {
+      var ta = document.createElement("textarea");
+      ta.value = texto; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); avisar(true); }catch(e){ avisar(false); }
+      document.body.removeChild(ta);
+    }
+  }
+
+  function descargarCSV(){
+    var lista = listaFiltrada();
+    if(!lista.length) return;
+    var filas = ["usuario,nombre,estado,desde,perfil"];
+    function campo(v){ return '"'+String(v||"").replace(/"/g,'""')+'"'; }
+    for(var i=0;i<lista.length;i++){
+      var c = lista[i];
+      var est = c.estado ? ETIQUETA_ESTADO[c.estado] : "";
+      filas.push([campo(c.usuario),campo(c.nombre),campo(est),campo(formatearFecha(c.ts)),campo(c.href)].join(","));
+    }
+    var blob = new Blob(["\ufeff"+filas.join("\n")],{ type:"text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "eco-"+pestanaActiva+".csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 500);
+  }
+
+  // ═════════════════════════════════════════
+  // Navegación y eventos
+  // ═════════════════════════════════════════
+  var botonesSeccion = document.querySelectorAll(".seccion-btn");
+  for(var b=0;b<botonesSeccion.length;b++){
+    botonesSeccion[b].onclick = function(){
+      var sec = this.getAttribute("data-sec");
+      for(var k=0;k<botonesSeccion.length;k++){ botonesSeccion[k].classList.remove("activa"); }
+      this.classList.add("activa");
+      $("sec-red").classList.add("oculto");
+      $("sec-crecimiento").classList.add("oculto");
+      $("sec-mensajes").classList.add("oculto");
+      $("sec-tarjeta").classList.add("oculto");
+      $("sec-"+sec).classList.remove("oculto");
+      window.scrollTo(0,0);
+    };
+  }
+
+  $("agregarBtn").onclick = function(){
+    $("app").classList.add("oculto");
+    $("bienvenida").classList.remove("oculto");
+    window.scrollTo(0,0);
+  };
+  $("salirBtn").onclick = function(){
+    if(confirm("Se borra todo lo cargado y vuelves al inicio. ¿Seguimos?")){ location.reload(); }
+  };
+
+  $("entrada").addEventListener("change", function(e){
+    recibirArchivos(e.target.files);
+    e.target.value = "";
+  });
+
+  var zona = $("zona");
+  ["dragenter","dragover"].forEach(function(ev){
+    zona.addEventListener(ev,function(e){ e.preventDefault(); e.stopPropagation(); zona.classList.add("encima"); });
+  });
+  ["dragleave","drop"].forEach(function(ev){
+    zona.addEventListener(ev,function(e){ e.preventDefault(); e.stopPropagation(); zona.classList.remove("encima"); });
+  });
+  zona.addEventListener("drop",function(e){
+    if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length){ recibirArchivos(e.dataTransfer.files); }
+  });
+
+  $("lista").addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest(".marcar") : null;
+    if(b && b.getAttribute("data-clave")){ alternarRevisada(b.getAttribute("data-clave")); }
+  });
+
+  $("buscador").oninput  = function(){ visibles = 100; renderLista(); };
+  $("orden").onchange    = function(){ visibles = 100; renderLista(); };
+  $("masBtn").onclick    = function(){ visibles += 100; renderLista(); };
+  $("copiarBtn").onclick = copiar;
+  $("csvBtn").onclick    = descargarCSV;
+
+  revisadas = leerLocal(LLAVE_REVISADAS) || {};
+  foto = leerLocal(LLAVE_FOTO);
+
+  // ═════════════════════════════════════════
+  // Instalar en la pantalla de inicio
+  // ═════════════════════════════════════════
+  var promptDiferido = null;
+  function yaInstalada(){
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  }
+  function esIOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+           (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault();
+    promptDiferido = e;
+    if(!yaInstalada()){ $("instalar").classList.add("visible"); }
+  });
+  window.addEventListener("appinstalled", function(){
+    promptDiferido = null;
+    $("instalar").classList.remove("visible");
+    $("pasos").classList.remove("visible");
+  });
+  $("instalarBtn").onclick = function(){
+    if(promptDiferido){
+      promptDiferido.prompt();
+      promptDiferido.userChoice.then(function(){ promptDiferido = null; });
+      return;
+    }
+    $("pasos").classList.toggle("visible");
+  };
+  if(esIOS() && !yaInstalada()){
+    $("instalar").classList.add("visible");
+    $("instalarBtn").textContent = "Cómo hacerlo";
+  }
+
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js").catch(function(){ /* sin offline, pero funciona */ });
+    });
+  }
+
+})();
+</script>
+</body>
+</html>

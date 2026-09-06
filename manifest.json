@@ -1,0 +1,17 @@
+{
+  "name": "eco — quién te devuelve el seguimiento",
+  "short_name": "eco",
+  "description": "Compara tus seguidores y seguidos de Instagram directamente en tu dispositivo.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#E3EEFA",
+  "theme_color": "#0A2E52",
+  "lang": "es-CL",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
